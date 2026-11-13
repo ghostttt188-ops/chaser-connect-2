@@ -976,7 +976,7 @@ TEMPLATE = """
 
             <!-- TAB: PROFILE (Persistent User Posts & Ribbons) -->
             {% if active_tab == 'profile' %}
-            <div class="glass-card rounded-2xl overflow-hidden shadow-2xl max-w-xl mx-auto space-y-6">
+            <div class="glass-card rounded-2xl overflow-hidden shadow-2xl max-w-xl mx-auto space-y-6" pb-32 mb-12">
                 <div class="h-36 bg-cover bg-center relative" style="background-image: url('{{ user_obj.cover_photo }}');">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent"></div>
                 </div>
