@@ -1108,7 +1108,10 @@ TEMPLATE = """
                     </div>
                     <div>
                         <label class="block font-bold mb-1 opacity-75">Profile Avatar Image</label>
-                        <input type="file" name="avatar" class="opacity-75">
+<label class="flex items-center justify-center w-full py-3 px-4 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-xl border border-gray-600 cursor-pointer shadow-md transition">
+    <i class="fa-solid fa-camera mr-2 text-accent"></i> Tap Here to Select PROFILE Photo
+    <input type="file" name="avatar" class="hidden">
+</label>
                     </div>
                     <button type="submit" class="w-full btn-action py-2.5 rounded-xl text-xs font-bold shadow-md">Save Profile & Ribbons</button>
                 </form>
