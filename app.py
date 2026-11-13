@@ -415,7 +415,7 @@ TEMPLATE = """
             
             <div class="h-5 w-[1px] bg-gray-500/30 mx-0.5"></div>
 
-            <a href="/?tab=profile" class="flex items-center gap-2 hover:opacity-85 transition">
+            <a href="/?tab=profile" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold rounded-lg border border-gray-700 transition">PROFILE</a>
                 <img src="{{ session.get('avatar') }}" class="w-8 h-8 rounded-full border border-accent object-cover">
             </a>
             <a href="/logout" class="bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1.5 rounded-xl hover:bg-red-500 hover:text-white transition text-xs font-bold"><i class="fa-solid fa-right-from-bracket"></i></a>
