@@ -376,7 +376,7 @@ TEMPLATE = """
     </marquee>
 
     <!-- Navigation Header -->
-    <nav class="glass-card sticky top-0 z-50 px-3 md:px-6 flex items-center justify-between border-b {{ 'tornado-glow' if tornado_active else 'border-gray-800' }}">
+    <nav class="glass-card sticky top-0 z-50 px-3 py-2.5 flex items-center justify-between border-b overflow-x-auto whitespace-nowrap w-full">
         <div class="flex items-center space-x-3">
             <a href="/?tab=feed" class="flex items-center space-x-2.5">
                 <div class="w-10 h-10 rounded-xl btn-action flex items-center justify-center shadow-lg">
