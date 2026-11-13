@@ -420,7 +420,7 @@ TEMPLATE = """
     </nav>
 
     <!-- Main Container Layout -->
-    <main class="flex-1 max-w-full px-2 w-full mx-auto p-4 md:p-6 relative">
+    <main class="flex-1 w-full max-w-full px-3 py-4 md:p-6 relative overflow-hidden">
         
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
