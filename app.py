@@ -1112,6 +1112,7 @@ TEMPLATE = """
                     </div>
                     <button type="submit" class="w-full btn-action py-2.5 rounded-xl text-xs font-bold shadow-md">Save Profile & Ribbons</button>
                 </form>
+            <div class="h-28 w-full"></div>
             </div>
             {% endif %}
 
