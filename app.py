@@ -1321,7 +1321,12 @@ def index():
   posts_with_images = [p for p in posts if p.image_file]
   users = User.query.all()
   my_name = session.get("display_name")
-  user_obj = User.query.filter_by(username=session["user"]).first()
+  current_username = session.get("user")
+user_obj = (
+    User.query.filter_by(username=current_username).first()
+    if current_username
+    else None
+)
   user_accent = user_obj.accent if user_obj else "blue"
 
   pinned_post = None
