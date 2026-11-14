@@ -1322,12 +1322,12 @@ def index():
   users = User.query.all()
   my_name = session.get("display_name")
   current_username = session.get("user")
-user_obj = (
-    User.query.filter_by(username=current_username).first()
-    if current_username
-    else None
-)
-  user_accent = user_obj.accent if user_obj else "blue"
+if current_username:
+  user_obj = User.query.filter_by(username=current_username).first()
+else:
+  user_obj = None
+
+user_accent = user_obj.accent if user_obj else "blue"
 
   pinned_post = None
   if user_obj and user_obj.pinned_post_id:
