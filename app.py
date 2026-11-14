@@ -1881,12 +1881,9 @@ def profile():
     db.session.commit()
   return redirect("/?tab=profile")
 
-# --- Comment Interaction & Deletion Routes ---
-
-
 @app.route('/comment/<int:comment_id>/like', methods=['POST'])
 def like_comment(comment_id):
-  if 'user_id' not in session:
+  if 'user' not in session:
     return redirect(url_for('login'))
   comment = Comment.query.get_or_404(comment_id)
   comment.likes = (comment.likes or 0) + 1
@@ -1896,21 +1893,19 @@ def like_comment(comment_id):
 
 @app.route('/comment/<int:comment_id>/delete', methods=['POST'])
 def delete_comment(comment_id):
-  if 'user_id' not in session:
+  if 'user' not in session:
     return redirect(url_for('login'))
+  current_user_obj = User.query.filter_by(username=session['user']).first()
   comment = Comment.query.get_or_404(comment_id)
-  if comment.user_id == session['user_id']:
+  if current_user_obj and comment.user_id == current_user_obj.id:
     db.session.delete(comment)
     db.session.commit()
   return redirect(request.referrer or url_for('index'))
 
 
-# --- Group Chat Management & Deletion Routes ---
-
-
 @app.route('/group/<int:group_id>/add_member', methods=['POST'])
 def add_group_member(group_id):
-  if 'user_id' not in session:
+  if 'user' not in session:
     return redirect(url_for('login'))
   group = ChatGroup.query.get_or_404(group_id)
   user_to_add_id = request.form.get('user_id')
@@ -1919,21 +1914,21 @@ def add_group_member(group_id):
   if user_to_add and user_to_add not in group.members:
     group.members.append(user_to_add)
     db.session.commit()
-  return redirect(url_for('group_chat', group_id=group_id))
+  return redirect(url_for('index'))
 
 
 @app.route('/group/<int:group_id>/delete', methods=['POST'])
 def delete_group(group_id):
-  if 'user_id' not in session:
+  if 'user' not in session:
     return redirect(url_for('login'))
+  current_user_obj = User.query.filter_by(username=session['user']).first()
   group = ChatGroup.query.get_or_404(group_id)
 
-  if group.creator_id == session.get('user_id'):
+  if current_user_obj and group.creator_id == current_user_obj.id:
     ChatMessage.query.filter_by(group_id=group.id).delete()
     db.session.delete(group)
     db.session.commit()
-
-  return redirect(url_for('messages_feed'))
+  return redirect(url_for('index'))
 
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=5000, debug=True)
