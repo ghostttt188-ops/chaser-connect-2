@@ -14,7 +14,12 @@ import requests
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "vortex-chaser-connect-persistent-auth-2026"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///chaser_social.db"
+if os.path.exists('/opt/render/project/data'):
+  db_path = '/opt/render/project/data/chaser_social.db'
+else:
+  db_path = 'chaser_social.db'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["UPLOAD_FOLDER"] = os.path.join(
     os.path.dirname(__file__), "static", "uploads"
@@ -654,11 +659,28 @@ TEMPLATE = """
                     <div class="mt-4 space-y-2 pt-3 border-t border-gray-500/10">
                         {% for comment in comments_map[post.id] %}
                         <div class="bg-black/20 p-2.5 rounded-xl border border-gray-500/10 text-xs flex justify-between items-center">
-                            <div>
-                                <span class="font-bold text-accent">@{{ comment.handle }}:</span> <span class="opacity-90">{{ comment.text | mentions | safe }}</span>
-                            </div>
-                            <span class="text-[10px] opacity-60">{{ comment.timestamp.strftime('%H:%M') }}</span>
-                        </div>
+    <div>
+        <span class="font-bold text-accent">@{{ comment.handle }}:</span> <span class="opacity-90">{{ comment.text }}</span>
+    </div>
+    <div class="flex items-center space-x-3">
+        <span class="text-[10px] opacity-60">{{ comment.timestamp.strftime('%H:%M') }}</span>
+        <!-- Like Comment -->
+        <form action="{{ url_for('like_comment', comment_id=comment.id) }}" method="POST" class="inline">
+            <button type="submit" class="hover:text-blue-400 flex items-center space-x-1">
+                <i class="fa-solid fa-heart text-[10px]"></i>
+                <span>{{ comment.likes or 0 }}</span>
+            </button>
+        </form>
+        <!-- Delete Comment (Owner Only) -->
+        {% if comment.user_id == session.get('user_id') %}
+        <form action="{{ url_for('delete_comment', comment_id=comment.id) }}" method="POST" onsubmit="return confirm('Delete this comment?');" class="inline">
+            <button type="submit" class="hover:text-red-400">
+                <i class="fa-solid fa-trash text-[10px]"></i>
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
                         {% endfor %}
                         <form action="/comment/{{ post.id }}" method="POST" class="flex gap-2 mt-2">
                             <input type="text" name="text" placeholder="Write a reply..." required class="flex-1 custom-input rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-accent">
@@ -696,9 +718,29 @@ TEMPLATE = """
                             </div>
                             <p class="text-xs leading-relaxed opacity-90">{{ c.description }}</p>
                         </div>
-                        <div class="p-3 bg-black/20 border-t border-gray-500/10 flex justify-end">
-                            <a href="/?tab=community_detail&id={{ c.id }}" class="btn-action px-4 py-1.5 rounded-xl text-xs font-bold shadow">Visit Group Feed</a>
-                        </div>
+                        <div class="p-3 bg-black/20 border-t border-gray-500/10 space-y-3">
+    <div class="flex justify-between items-center">
+        <a href="/?tab=community_detail&id={{ c.id }}" class="btn-action px-4 py-1.5 rounded-xl text-xs font-bold shadow">Visit Group Feed</a>
+        {% if c.admin == session.get('username') or c.creator_id == session.get('user_id') %}
+        <form action="{{ url_for('delete_group', group_id=c.id) }}" method="POST" onsubmit="return confirm('Permanently delete this group chat?');" class="inline">
+            <button type="submit" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition shadow">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    
+    <!-- Add Member Form -->
+    <form action="{{ url_for('add_group_member', group_id=c.id) }}" method="POST" class="flex gap-2 pt-2 border-t border-gray-800">
+        <select name="user_id" class="flex-1 custom-input rounded-xl px-3 py-1.5 text-xs bg-black/40 border border-gray-700 text-white">
+            <option value="">Select chaser to add...</option>
+            {% for u in all_users %}
+                <option value="{{ u.id }}">@{{ u.handle }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl transition border border-gray-700">Add</button>
+    </form>
+</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -1844,6 +1886,59 @@ def profile():
     db.session.commit()
   return redirect("/?tab=profile")
 
+# --- Comment Interaction & Deletion Routes ---
+
+
+@app.route('/comment/<int:comment_id>/like', methods=['POST'])
+def like_comment(comment_id):
+  if 'user_id' not in session:
+    return redirect(url_for('login'))
+  comment = Comment.query.get_or_404(comment_id)
+  comment.likes = (comment.likes or 0) + 1
+  db.session.commit()
+  return redirect(request.referrer or url_for('index'))
+
+
+@app.route('/comment/<int:comment_id>/delete', methods=['POST'])
+def delete_comment(comment_id):
+  if 'user_id' not in session:
+    return redirect(url_for('login'))
+  comment = Comment.query.get_or_404(comment_id)
+  if comment.user_id == session['user_id']:
+    db.session.delete(comment)
+    db.session.commit()
+  return redirect(request.referrer or url_for('index'))
+
+
+# --- Group Chat Management & Deletion Routes ---
+
+
+@app.route('/group/<int:group_id>/add_member', methods=['POST'])
+def add_group_member(group_id):
+  if 'user_id' not in session:
+    return redirect(url_for('login'))
+  group = ChatGroup.query.get_or_404(group_id)
+  user_to_add_id = request.form.get('user_id')
+  user_to_add = User.query.get(user_to_add_id)
+
+  if user_to_add and user_to_add not in group.members:
+    group.members.append(user_to_add)
+    db.session.commit()
+  return redirect(url_for('group_chat', group_id=group_id))
+
+
+@app.route('/group/<int:group_id>/delete', methods=['POST'])
+def delete_group(group_id):
+  if 'user_id' not in session:
+    return redirect(url_for('login'))
+  group = ChatGroup.query.get_or_404(group_id)
+
+  if group.creator_id == session.get('user_id'):
+    ChatMessage.query.filter_by(group_id=group.id).delete()
+    db.session.delete(group)
+    db.session.commit()
+
+  return redirect(url_for('messages_feed'))
 
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=5000, debug=True)
