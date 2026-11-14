@@ -1301,17 +1301,6 @@ TEMPLATE = """
 # --- Unified Controller Route ---
 @app.route("/")
 def index():
-  tornado_active = check_tornado_warning_active()
-  live_ticker = get_live_nws_alerts()
-
-  if not session.get("user"):
-    return render_template_string(
-        TEMPLATE,
-        active_tab="feed",
-        live_nws_ticker=live_ticker,
-        tornado_active=tornado_active,
-        user_accent="blue",
-    )
 
   tab = request.args.get("tab", "feed")
   posts = Post.query.order_by(Post.timestamp.desc()).all()
@@ -1472,6 +1461,7 @@ def index():
       count_tornado=count_tornado,
       count_photo=count_photo,
       count_general=count_general,
+      all_users=users,
   )
 
 
