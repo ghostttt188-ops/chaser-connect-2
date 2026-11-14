@@ -281,6 +281,23 @@ TEMPLATE = """
             --input-bg: rgba(0, 0, 0, 0.03);
         }
 
+        .glass-card {
+        background: rgba(17, 24, 39, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.5);
+    }
+    .btn-action {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        transition: all 0.2s ease;
+    }
+    .btn-action:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
         [data-accent="blue"] { --accent-primary: #3b82f6; --accent-gradient: linear-gradient(135deg, #3b82f6, #1d4ed8); }
         [data-accent="red"] { --accent-primary: #ef4444; --accent-gradient: linear-gradient(135deg, #ef4444, #991b1b); }
         [data-accent="amber"] { --accent-primary: #f59e0b; --accent-gradient: linear-gradient(135deg, #f59e0b, #b45309); }
